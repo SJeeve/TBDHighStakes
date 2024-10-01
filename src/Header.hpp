@@ -8,7 +8,11 @@ class PositionSensing{
 };
 
 class VectorMath {
-    static std::vector<long> CartesianToPolar(std::vector<long> componentVector);
-    static std::vector<long> PolarToCartesian(std::vector<long> polarVector);
+    public: static std::vector<long> CartesianToPolar(std::vector<long> componentVector);
+    public: static std::vector<long> PolarToCartesian(std::vector<long> polarVector);
+    public: static double AngleToDistance(double angle);
+    public: static double RadiansToDegrees(double radians);
+    public: static double DegreesToRadians(double degrees);
+    public: static void ScaleVector(std::vector<double> &cartesianVector, double scalar);
 };
 #endif

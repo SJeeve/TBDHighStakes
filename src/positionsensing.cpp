@@ -2,34 +2,46 @@
 #include "vector"
 #include "Header.hpp"
 using namespace vex;
-    class PositionSensing{
-        public:
-        std::vector<long> previousGlobalPosition;
-        long previousGlobalOrientation;
-        long lastResetGlobalOrientation;
+class PositionSensing{
+    //Note: All measurements are in inches
+    public:
+    std::vector<double> currentPosition;
+    double previousGlobalOrientation;
+    double lastResetGlobalOrientation;
 
-        //Left-right distance between tracking center and left tracking wheel
-        long leftTrackingWheelDistance;
-        //Left-right distance between traclong center and right tracking wheel
-        long rightTrackingWheelDistance;
-        //Forward-backward distance between tracking center to the back tracking wheel
-        long backTrackingWheelDistance;
-        PositionSensing(long startingX, long startingY, long _leftTrackingWheelDistance, long _rightTrackingWheelDistance, long _backTrackingWheelDistance)
-        {
-            previousGlobalPosition = {startingX, startingY};
-            leftTrackingWheelDistance = _leftTrackingWheelDistance;
-            rightTrackingWheelDistance = _rightTrackingWheelDistance;
-            backTrackingWheelDistance = _backTrackingWheelDistance;
-        }
+    //Left-right distance between tracking center and left tracking wheel
+    double leftTrackingWheelDistance;
+    //Left-right distance between tracking center and right tracking wheel
+    double rightTrackingWheelDistance;
+    //Forward-backward distance between tracking center to the back tracking wheel
+    double backTrackingWheelDistance;
+    PositionSensing(double startingX, double startingY, double _leftTrackingWheelDistance, double _rightTrackingWheelDistance, double _backTrackingWheelDistance)
+    {
+        currentPosition = {startingX, startingY};
+        leftTrackingWheelDistance = _leftTrackingWheelDistance;
+        rightTrackingWheelDistance = _rightTrackingWheelDistance;
+        backTrackingWheelDistance = _backTrackingWheelDistance;
+    }
 
-        public: std::vector<long> GetPosition()
-        {
-            return previousGlobalPosition;
-        }
+    public: std::vector<double> GetPosition()
+    {
+        return currentPosition;
+    }
 
-        public: void UpdatePosition(long deltaLeft, long deltaRight, long deltaBack)
-        {
-            //Deltas correspond to the change in angles from the rotation sensors
-            
-        }
+    public: void UpdatePosition(double angleLeft, double angleRight, double angleBack)
+    {
+        //Deltas correspond to the change in angles from the rotation sensors
+        //Need to change deltas to distance traveled 
+        double deltaLeft = VectorMath::AngleToDistance(angleLeft);
+        double deltaRight = VectorMath::AngleToDistance(angleRight);
+        double deltaBack = VectorMath::AngleToDistance(angleBack);
+        //Note arc angle is in radians
+        double deltaTheta = (deltaLeft - deltaRight) / (leftTrackingWheelDistance + rightTrackingWheelDistance);
+        double arcRadius = (deltaRight / deltaTheta) + rightTrackingWheelDistance;
+
+        std::vector<double> globalTranslationVector = {(deltaBack / deltaTheta) + backTrackingWheelDistance, (deltaRight / deltaTheta) + rightTrackingWheelDistance};
+        //Have to multiply vector by 2sin(theta/2) t
+        VectorMath::ScaleVector(globalTranslationVector, 2 * sin(deltaTheta / 2.0));
+
+    }
 };

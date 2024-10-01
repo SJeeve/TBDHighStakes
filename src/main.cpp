@@ -4,12 +4,12 @@ using namespace vex;
 // A global instance of competition
 competition Competition;
 //Edit these values for different starting positions
-const long startingX = 0;
-const long startingY = 0;
+const double startingX = 0;
+const double startingY = 0;
 //These should stay the same for every version, unless changes are made to the tracking wheels' position
-const long leftTrackingWheelDistance = 1;
-const long rightTrackingWheelDistance = 1;
-const long backWheelTrackingWheelDistance = 1;
+const double leftTrackingWheelDistance = 1;
+const double rightTrackingWheelDistance = 1;
+const double backWheelTrackingWheelDistance = 1;
 //Assign ports for tracking wheels here
 const int32_t leftTrackingPort = PORT1;
 const int32_t rightTrackingPort = PORT2;
@@ -31,8 +31,8 @@ void resetRotationSensors()
 }
 
 void autonomous(void) {
-  position.UpdatePosition(leftTrackingWheel.angle(degrees), rightTrackingWheel.angle(degrees), backTrackingWheel.angle(degrees));
-  resetRotationSensors(); 
+  position.UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
+  resetRotationSensors();
   wait(0.02, seconds);
 }
 
