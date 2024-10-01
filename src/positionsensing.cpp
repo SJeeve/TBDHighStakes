@@ -15,12 +15,13 @@ class PositionSensing{
     double rightTrackingWheelDistance;
     //Forward-backward distance between tracking center to the back tracking wheel
     double backTrackingWheelDistance;
-    PositionSensing(double startingX, double startingY, double _leftTrackingWheelDistance, double _rightTrackingWheelDistance, double _backTrackingWheelDistance)
+    PositionSensing(double startingX, double startingY, double _leftTrackingWheelDistance, double _rightTrackingWheelDistance, double _backTrackingWheelDistance, double startingOrientation)
     {
         currentPosition = {startingX, startingY};
         leftTrackingWheelDistance = _leftTrackingWheelDistance;
         rightTrackingWheelDistance = _rightTrackingWheelDistance;
         backTrackingWheelDistance = _backTrackingWheelDistance;
+        lastResetGlobalOrientation = startingOrientation;
     }
 
     public: std::vector<double> GetPosition()
@@ -42,6 +43,10 @@ class PositionSensing{
         std::vector<double> globalTranslationVector = {(deltaBack / deltaTheta) + backTrackingWheelDistance, (deltaRight / deltaTheta) + rightTrackingWheelDistance};
         //Have to multiply vector by 2sin(theta/2) t
         VectorMath::ScaleVector(globalTranslationVector, 2 * sin(deltaTheta / 2.0));
+        VectorMath::CartesianToPolar(globalTranslationVector);
+        VectorMath::RotateVectorAddition(globalTranslationVector, (lastResetGlobalOrientation + deltaTheta / 2.0));
+        VectorMath::PolarToCartesian(globalTranslationVector);
+        VectorMath::
 
     }
 };

@@ -11,25 +11,36 @@ using namespace std;
         //Needs more testing to get actual value
         const static double wheelDiameter = 2.75;
         const static double wheelCircumference = wheelDiameter * M_PI;
-        public: static std::vector<long> CartesianToPolar(std::vector<long> componentVector)
+        public: static void CartesianToPolar(std::vector<long> &componentVector)
         {
             //NOTE: ALL THESE ARE ALL IN RADIANS NOT DEGREES
+            //& means pass by reference
             if(componentVector.size() != 2)
             {
                 std::cerr << "vectorMath CartesianToPolar warning: Vector size is " + componentVector.size() << std::endl;
             }
-            //Initializing polar vector with two elements
             double xComponent = componentVector[0];
             double yComponent = componentVector[1];
-            std::vector<long> polarVector (2, 0);
             //Sets first element of vector to length of vector
-            polarVector[0] = sqrt(pow(xComponent, 2.0) + pow(yComponent, 2.0));
+            componentVector[0] = sqrt(pow(xComponent, 2.0) + pow(yComponent, 2.0));
             //Sets second element to angle
-            polarVector[1] = atan(yComponent/xComponent);
-            return polarVector;
+            componentVector[1] = atan(yComponent/xComponent);
+        }
+        public: static void AddVectors(std::vector<double> &holderVector, std::vector<double> &addedVector)
+        {
+            //This adds one vector to another
+            //Note that the vector designated holderVector is the only vector that will be changed
+            //Although not required, this should only be used with cartesian vectors
+            for(int i = 0; i < holderVector.size(); i++)
+                holderVector[i] += addedVector[i];
+        }
+        public: static void RotateVectorAddition(std::vector<double> &polarVector, double radians)
+        {
+            //This requires the vector to be in polar form
+            polarVector[1] += radians;
         }
 
-        public: static std::vector<double> PolarToCartesian(std::vector<double> polarVector)
+        public: static void PolarToCartesian(std::vector<double> &polarVector)
         {
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
             if(polarVector.size() != 2)
@@ -37,11 +48,11 @@ using namespace std;
                 std::cerr << "vectorMath PolarToCartesian warning: Vector size is " + polarVector.size() << std::endl;
             }
             double polarMagnitude = polarVector[0];
-            double polarAngle = polarVector[1];
-            std::vector<double> componentVector (2,0);
-            componentVector[0] = polarMagnitude * cos(polarAngle);
-            componentVector[1] = polarMagnitude * sin(polarAngle);
+            double polarRadians = polarVector[1];
+            polarVector[0] = polarMagnitude * cos(polarRadians);
+            polarVector[1] = polarMagnitude * sin(polarRadians);
         }
+
         public: static void ScaleVector(std::vector<double> &cartesianVector, double scalar)
         {
             for(int i = 0; i < cartesianVector.size(); i++)
