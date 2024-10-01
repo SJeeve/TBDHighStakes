@@ -6,6 +6,7 @@ competition Competition;
 //Edit these values for different starting positions
 const double startingX = 0;
 const double startingY = 0;
+const double startingOrientation = 0;
 //These should stay the same for every version, unless changes are made to the tracking wheels' position
 const double leftTrackingWheelDistance = 1;
 const double rightTrackingWheelDistance = 1;
@@ -17,10 +18,10 @@ const int32_t backTrackingPort = PORT3;
 vex::rotation leftTrackingWheel = vex::rotation(leftTrackingPort, false);
 vex::rotation rightTrackingWheel = vex::rotation(rightTrackingPort, false);
 vex::rotation backTrackingWheel = vex::rotation(backTrackingPort, false);
-PositionSensing position = PositionSensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance);
-
+PositionSensing position;
 void pre_auton(void) { 
   resetRotationSensors();
+  position = PositionSensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance, startingOrientation);
 }
 
 void resetRotationSensors()

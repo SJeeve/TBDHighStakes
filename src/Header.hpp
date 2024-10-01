@@ -2,9 +2,9 @@
 #ifndef HEADER_HPP
 #define HEADER_HPP
 class PositionSensing{
-    public: PositionSensing(long startingX, long startingY, long leftTrackingWheelDistance, long rightTrackingWheelDistance, long backTrackingWheelDistance, double);
-    public: std::vector<long> GetPosition();
-    public: void UpdatePosition(long deltaLeft, long deltaRight, long deltaBack);
+    public: PositionSensing(double startingX, double startingY, double leftTrackingWheelDistance, double rightTrackingWheelDistance, double backTrackingWheelDistance, double startingOrientation);
+    public: std::vector<double> GetPosition();
+    public: void UpdatePosition(double deltaLeft, double deltaRight, double deltaBack);
 };
 
 class VectorMath {

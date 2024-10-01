@@ -46,7 +46,6 @@ class PositionSensing{
         VectorMath::CartesianToPolar(globalTranslationVector);
         VectorMath::RotateVectorAddition(globalTranslationVector, (lastResetGlobalOrientation + deltaTheta / 2.0));
         VectorMath::PolarToCartesian(globalTranslationVector);
-        VectorMath::
-
+        VectorMath::AddVectors(currentPosition, globalTranslationVector);
     }
 };
