@@ -3,21 +3,61 @@
 using namespace vex;
 // A global instance of competition
 competition Competition;
+brain Brain;
+controller Controller;
+
+//ALL VALUES IN INCHES UNLESS STATED OTHERWISE
+
+//Intake motors
+motor intake = motor(PORT11, false);
+
+//Initializing drivetrain motors
+motor rightFront = motor(PORT12, true);
+motor rightMiddle = motor(PORT13, true);
+motor rightBack = motor(PORT14, true);
+motor leftFront = motor(PORT15, false);
+motor leftMiddle = motor(PORT16, false);
+motor leftBack = motor(PORT17, false);
+
+//Motor groups
+motor_group leftDriveSmart = motor_group(leftFront, leftMiddle, leftBack);
+motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
+
+//These values are used to construct the drivetrain object
+const float wheelTravel = 2.75 * M_PI;
+const float trackWidth = 18;
+const float wheelBase = 18;
+const float externalGearRatio = 1;
+
+//Drivetrain object
+drivetrain Drivetrain = drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
+
+//Pneumatic stuff
+digital_out MobileGoalSolenoid = digital_out(Brain.ThreeWirePort.A);
+bool MobileGoalSolenoidIsActive = false;
+
 //Edit these values for different starting positions
-const double startingX = 0;
-const double startingY = 0;
-const double startingOrientation = 0;
+const float startingX = 0;
+const float startingY = 0;
+const float startingOrientation = 0;
+
 //These should stay the same for every version, unless changes are made to the tracking wheels' position
-const double leftTrackingWheelDistance = 1;
-const double rightTrackingWheelDistance = 1;
-const double backWheelTrackingWheelDistance = 1;
-//Assign ports for tracking wheels here
-const int32_t leftTrackingPort = PORT1;
-const int32_t rightTrackingPort = PORT2;
-const int32_t backTrackingPort = PORT3;
-vex::rotation leftTrackingWheel = vex::rotation(leftTrackingPort, false);
-vex::rotation rightTrackingWheel = vex::rotation(rightTrackingPort, false);
-vex::rotation backTrackingWheel = vex::rotation(backTrackingPort, false);
+const float leftTrackingWheelDistance = 1;
+const float rightTrackingWheelDistance = 1;
+const float backWheelTrackingWheelDistance = 1;
+
+//Tracking wheels
+vex::rotation leftTrackingWheel = vex::rotation(PORT1, false);
+vex::rotation rightTrackingWheel = vex::rotation(PORT2, false);
+vex::rotation backTrackingWheel = vex::rotation(PORT3, false);
+
+//Change controls here
+const vex::controller::button SpinIntakeForward = Controller.ButtonR1; 
+const vex::controller::button SpinIntakeBackward = Controller.ButtonL1;
+const vex::controller::button ActivateFineControl = Controller.ButtonX;
+const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
+
+
 PositionSensing position;
 void pre_auton(void) { 
   resetRotationSensors();
@@ -34,12 +74,46 @@ void resetRotationSensors()
 void autonomous(void) {
   position.UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
   resetRotationSensors();
-  wait(0.02, seconds);
+  vex::wait(20, msec);
 }
 
 void usercontrol(void) {
+  bool FineControl = false;
+  leftDriveSmart.spin(forward);
+  rightDriveSmart.spin(forward);
+  intake.spin(forward);
   while (1) {
-    wait(20, msec);
+    float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
+    float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
+
+    if(FineControl){
+      leftDrive = pow(leftDrive, 3);
+      rightDrive = pow(rightDrive, 3);
+    }
+
+    if(ActivateMobileGoalSolenoid.pressing())
+    {
+      if(MobileGoalSolenoidIsActive)
+        MobileGoalSolenoid.set(false);
+      else 
+        MobileGoalSolenoid.set(true); 
+      MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
+    }
+    //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
+    if(ActivateFineControl.pressing())
+      FineControl = !FineControl;
+      
+    leftDriveSmart.spin(forward, leftDrive * 6, volt);
+    rightDriveSmart.spin(forward, rightDrive * 6, volt);
+
+    if(SpinIntakeForward.pressing())
+      intake.spin(forward, 12, volt);
+    else if(SpinIntakeBackward.pressing())
+      intake.spin(forward, -12, volt);
+    else
+      intake.stop();
+
+    vex::wait(20, msec);  
   }
 }
 
@@ -53,6 +127,6 @@ int main() {
   pre_auton();
 
   while (true) {
-    wait(100, msec);
+    vex::wait(100, msec);
   }
 }
