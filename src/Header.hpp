@@ -18,5 +18,6 @@ class VectorMath {
     public: static void RotateVectorAddition(std::vector<float> &polarVector, float radians);
     public: static void AddVectors(std::vector<float> &holderVector, std::vector<float> &addedVector);
     public: static float Clampf(float value, float minimum, float maximum);
+    public: static float MagnitudeOfVector(std::vector<float> &cartesianVector);
 };
 #endif

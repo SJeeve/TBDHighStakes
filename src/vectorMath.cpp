@@ -49,6 +49,11 @@ using namespace std;
             return value;
         }
 
+        public: static float MagnitudeOfVector(std::vector<float> &cartesianVector)
+        {
+            return sqrt(pow(cartesianVector[0], 2) + pow(cartesianVector[1], 2));
+        }
+        
         public: static void PolarToCartesian(std::vector<float> &polarVector)
         {
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
