@@ -1,12 +1,12 @@
 #include "vex.h"
 #include "Header.hpp"
 using namespace vex;
-// A global instance of competition
+
 competition Competition;
 brain Brain;
 controller Controller;
 
-//ALL VALUES IN INCHES UNLESS STATED OTHERWISE
+//ALL MEASUREMENTS IN INCHES UNLESS STATED OTHERWISE
 
 //Intake motors
 motor intake = motor(PORT11, false);
@@ -86,6 +86,9 @@ void usercontrol(void) {
     float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
     float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
 
+    if(ActivateFineControl.pressing())
+      FineControl = !FineControl;
+    
     if(FineControl){
       leftDrive = pow(leftDrive, 3);
       rightDrive = pow(rightDrive, 3);
@@ -100,8 +103,7 @@ void usercontrol(void) {
       MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
     }
     //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
-    if(ActivateFineControl.pressing())
-      FineControl = !FineControl;
+
       
     leftDriveSmart.spin(forward, leftDrive * 6, volt);
     rightDriveSmart.spin(forward, rightDrive * 6, volt);
