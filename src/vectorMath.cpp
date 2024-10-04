@@ -40,6 +40,15 @@ using namespace std;
             polarVector[1] += radians;
         }
 
+        public: static float Clampf(float value, float minimum, float maximum)
+        {
+            if(value < minimum)
+                return minimum;
+            if(value > maximum)
+                return maximum;
+            return value;
+        }
+
         public: static void PolarToCartesian(std::vector<float> &polarVector)
         {
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
