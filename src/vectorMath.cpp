@@ -37,7 +37,21 @@ using namespace std;
             polarVector[1] += radians;
         }
 
-        void VectorMath::PolarToCartesian(std::vector<float> &polarVector)
+        static float Clampf(float value, float minimum, float maximum)
+        {
+            if(value < minimum)
+                return minimum;
+            if(value > maximum)
+                return maximum;
+            return value;
+        }
+
+        static float MagnitudeOfVector(std::vector<float> &cartesianVector)
+        {
+            return sqrt(pow(cartesianVector[0], 2) + pow(cartesianVector[1], 2));
+        }
+        
+        static void PolarToCartesian(std::vector<float> &polarVector)
         {
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
             if(polarVector.size() != 2)
@@ -69,4 +83,9 @@ using namespace std;
         float VectorMath::DegreesToRadians(float degrees)
         {
             return degrees * M_PI / 180.0;
+<<<<<<< HEAD
         }
+=======
+        }
+    };
+>>>>>>> eb811db2cccb91235a13b80d468a15a5b8fe577f
