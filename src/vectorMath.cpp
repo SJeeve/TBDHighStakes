@@ -1,17 +1,12 @@
 #include <vex.h>
 #include <vector>
 #include <iostream>
-
+#include "VectorMathHeader.h"
 using namespace vex;
 using namespace std;
-
-    class VectorMath{
-        public:
         //Wheel diameter is somewhere between 2.5 and 2.75
         //Needs more testing to get actual value
-        const static float wheelDiameter = 2.75;
-        const static float wheelCircumference = wheelDiameter * M_PI;
-        public: static void CartesianToPolar(std::vector<long> &componentVector)
+        void VectorMath::CartesianToPolar(std::vector<float> &componentVector)
         {
             //NOTE: ALL THESE ARE ALL IN RADIANS NOT DEGREES
             //& means pass by reference
@@ -26,7 +21,8 @@ using namespace std;
             //Sets second element to angle
             componentVector[1] = atan(yComponent/xComponent);
         }
-        public: static void AddVectors(std::vector<float> &holderVector, std::vector<float> &addedVector)
+
+        void VectorMath::AddVectors(std::vector<float> &holderVector, std::vector<float> &addedVector)
         {
             //This adds one vector to another
             //Note that the vector designated holderVector is the only vector that will be changed
@@ -34,13 +30,14 @@ using namespace std;
             for(int i = 0; i < holderVector.size(); i++)
                 holderVector[i] += addedVector[i];
         }
-        public: static void RotateVectorAddition(std::vector<float> &polarVector, float radians)
+        
+        void VectorMath::RotateVectorAddition(std::vector<float> &polarVector, float radians)
         {
             //This requires the vector to be in polar form
             polarVector[1] += radians;
         }
 
-        public: static void PolarToCartesian(std::vector<float> &polarVector)
+        void VectorMath::PolarToCartesian(std::vector<float> &polarVector)
         {
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
             if(polarVector.size() != 2)
@@ -53,24 +50,23 @@ using namespace std;
             polarVector[1] = polarMagnitude * sin(polarRadians);
         }
 
-        public: static void ScaleVector(std::vector<float> &cartesianVector, float scalar)
+        void VectorMath::ScaleVector(std::vector<float> &cartesianVector, float scalar)
         {
             for(int i = 0; i < cartesianVector.size(); i++)
                 cartesianVector[i] *= scalar;
         }    
 
-        public: static float AngleToDistance(float angle)
+        float VectorMath::AngleToDistance(float angle)
         {
             return (angle / 360.0) * wheelCircumference;
         }
 
-        public: static float RadiansToDegrees(float radians)
+        float VectorMath::RadiansToDegrees(float radians)
         {
             return radians * 180.0 / M_PI;
         }
 
-        public: static float DegreesToRadians(float degrees)
+        float VectorMath::DegreesToRadians(float degrees)
         {
             return degrees * M_PI / 180.0;
         }
-    };

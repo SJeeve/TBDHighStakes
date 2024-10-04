@@ -1,21 +1,15 @@
 #include "vex.h"
 #include "vector"
-#include "Header.hpp"
-using namespace vex;
-class PositionSensing{
-    //Note: All measurements are in inches
-    public:
-    std::vector<float> currentPosition;
-    float previousGlobalOrientation;
-    float lastResetGlobalOrientation;
+#include "positionsensing.h"
+#include "vectorMath.cpp"
 
-    //Left-right distance between tracking center and left tracking wheel
-    float leftTrackingWheelDistance;
-    //Left-right distance between tracking center and right tracking wheel
-    float rightTrackingWheelDistance;
-    //Forward-backward distance between tracking center to the back tracking wheel
-    float backTrackingWheelDistance;
-    PositionSensing(float startingX, float startingY, float _leftTrackingWheelDistance, float _rightTrackingWheelDistance, float _backTrackingWheelDistance, float startingOrientation)
+using namespace vex;
+using namespace vectormath;
+
+//Note: All measurements are in inches
+namespace positionsensing{
+
+    positionsensing::PositionSensing(float startingX, float startingY, float _leftTrackingWheelDistance, float _rightTrackingWheelDistance, float _backTrackingWheelDistance, float startingOrientation)
     {
         currentPosition = {startingX, startingY};
         leftTrackingWheelDistance = _leftTrackingWheelDistance;
@@ -24,12 +18,12 @@ class PositionSensing{
         lastResetGlobalOrientation = startingOrientation;
     }
 
-    public: std::vector<float> GetPosition()
+    std::vector<float> positionsensing::GetPosition()
     {
         return currentPosition;
     }
 
-    public: void UpdatePosition(float angleLeft, float angleRight, float angleBack)
+    void positionsensing::UpdatePosition(float angleLeft, float angleRight, float angleBack)
     {
         //Deltas correspond to the change in angles from the rotation sensors
         //Need to change deltas to distance traveled 
@@ -42,10 +36,10 @@ class PositionSensing{
 
         std::vector<float> globalTranslationVector = {(deltaBack / deltaTheta) + backTrackingWheelDistance, (deltaRight / deltaTheta) + rightTrackingWheelDistance};
         //Have to multiply vector by 2sin(theta/2) t
-        VectorMath::ScaleVector(globalTranslationVector, 2 * sin(deltaTheta / 2.0));
-        VectorMath::CartesianToPolar(globalTranslationVector);
-        VectorMath::RotateVectorAddition(globalTranslationVector, (lastResetGlobalOrientation + deltaTheta / 2.0));
-        VectorMath::PolarToCartesian(globalTranslationVector);
-        VectorMath::AddVectors(currentPosition, globalTranslationVector);
+        vectormath::VectorMath::ScaleVector(globalTranslationVector, 2 * sin(deltaTheta / 2.0));
+        vectormath::VectorMath::CartesianToPolar(globalTranslationVector);
+        vectormath::VectorMath::RotateVectorAddition(globalTranslationVector, (lastResetGlobalOrientation + deltaTheta / 2.0));
+        vectormath::VectorMath::PolarToCartesian(globalTranslationVector);
+        vectormath::VectorMath::AddVectors(currentPosition, globalTranslationVector);
     }
-};
+}

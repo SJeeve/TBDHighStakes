@@ -1,5 +1,5 @@
 #include "vex.h"
-#include "Header.hpp"
+#include "positionsensing.cpp"
 using namespace vex;
 
 competition Competition;
@@ -47,22 +47,18 @@ const float rightTrackingWheelDistance = 1;
 const float backWheelTrackingWheelDistance = 1;
 
 //Tracking wheels
-vex::rotation leftTrackingWheel = vex::rotation(PORT1, false);
-vex::rotation rightTrackingWheel = vex::rotation(PORT2, false);
-vex::rotation backTrackingWheel = vex::rotation(PORT3, false);
+rotation leftTrackingWheel = rotation(PORT1, false);
+rotation rightTrackingWheel = rotation(PORT2, false);
+rotation backTrackingWheel = rotation(PORT3, false);
 
 //Change controls here
-const vex::controller::button SpinIntakeForward = Controller.ButtonR1; 
-const vex::controller::button SpinIntakeBackward = Controller.ButtonL1;
-const vex::controller::button ActivateFineControl = Controller.ButtonX;
-const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
+const vex::controller::button SpinIntakeForwardButton = Controller.ButtonR2; 
+const vex::controller::button SpinIntakeBackwardButton = Controller.ButtonL2;
+const vex::controller::button ActivateFineControlButton = Controller.ButtonX;
+const vex::controller::button ActivateMobileGoalSolenoidButton = Controller.ButtonA;
 
 
-PositionSensing position;
-void pre_auton(void) { 
-  resetRotationSensors();
-  position = PositionSensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance, startingOrientation);
-}
+positionsensing position = positionsensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance, startingOrientation);
 
 void resetRotationSensors()
 {
@@ -71,22 +67,29 @@ void resetRotationSensors()
   backTrackingWheel.resetPosition();
 }
 
+void pre_auton(void) { 
+  resetRotationSensors();
+}
+
+
+
 void autonomous(void) {
-  position.UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
+  position.positionsensing::UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
   resetRotationSensors();
   vex::wait(20, msec);
 }
 
 void usercontrol(void) {
   bool FineControl = false;
-  leftDriveSmart.spin(forward);
-  rightDriveSmart.spin(forward);
-  intake.spin(forward);
+  leftDriveSmart.spin(vex::forward);
+  rightDriveSmart.spin(vex::forward);
+  intake.spin(vex::forward);
   while (1) {
     float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
     float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
 
-    if(ActivateFineControl.pressing())
+    //If we decide to keep this I would want an LED so it's easier to tell when it's on or off    
+    if(ActivateFineControlButton.pressing())
       FineControl = !FineControl;
     
     if(FineControl){
@@ -94,7 +97,7 @@ void usercontrol(void) {
       rightDrive = pow(rightDrive, 3);
     }
 
-    if(ActivateMobileGoalSolenoid.pressing())
+    if(ActivateMobileGoalSolenoidButton.pressing())
     {
       if(MobileGoalSolenoidIsActive)
         MobileGoalSolenoid.set(false);
@@ -102,16 +105,14 @@ void usercontrol(void) {
         MobileGoalSolenoid.set(true); 
       MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
     }
-    //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
-
       
-    leftDriveSmart.spin(forward, leftDrive * 6, volt);
-    rightDriveSmart.spin(forward, rightDrive * 6, volt);
+    leftDriveSmart.spin(vex::forward, leftDrive * 6, volt);
+    rightDriveSmart.spin(vex::forward, rightDrive * 6, volt);
 
-    if(SpinIntakeForward.pressing())
-      intake.spin(forward, 12, volt);
-    else if(SpinIntakeBackward.pressing())
-      intake.spin(forward, -12, volt);
+    if(SpinIntakeForwardButton.pressing())
+      intake.spin(vex::forward, 12, volt);
+    else if(SpinIntakeBackwardButton.pressing())
+      intake.spin(vex::forward, -12, volt);
     else
       intake.stop();
 
