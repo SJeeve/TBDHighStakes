@@ -6,6 +6,11 @@
 #include "v5.h"
 #include "v5_vcs.h"
 
+#include "Headers/positionSensing.h"
+#include "Headers/vectorMath.h"
+#include "Headers/Header.hpp"
+#include "Headers/Pathing.h"
+
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \

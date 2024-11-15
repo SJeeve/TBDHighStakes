@@ -1,39 +1,45 @@
 #include "vex.h"
-#include "positionsensing.cpp"
 using namespace vex;
-//Test
-competition Competition;
+
+vex::competition Competition;
 brain Brain;
-controller Controller;
+vex::controller Controller = vex::controller();
 
-//ALL MEASUREMENTS IN INCHES UNLESS STATED OTHERWISE
+vex::motor conveyorBelt = vex::motor(PORT4, false);
+vex::motor intake = vex::motor(PORT3, false);
+//Initializing drivetrain vex::motors
+vex::motor rightFront = vex::motor(PORT12, true);
+vex::motor rightMiddle = vex::motor(PORT13, true);
+vex::motor rightBack = vex::motor(PORT14, true);
+vex::motor leftFront = vex::motor(PORT15, false);
+vex::motor leftMiddle = vex::motor(PORT16, false);
+vex::motor leftBack = vex::motor(PORT17, false);
+//vex::motor groups
+vex::motor_group leftDriveSmart = vex::motor_group(leftFront, leftMiddle, leftBack);
+vex::motor_group rightDriveSmart = vex::motor_group(rightFront, rightMiddle, rightBack);
 
-//Intake motors
-motor intake = motor(PORT11, false);
+//These values are in inches
+float wheelTravel = 2.75 * M_PI;
+float trackWidth = 18;
+float wheelBase = 18;
+bool FineControl = false;
+bool ReverseControls = false;
+//Gear ratio
+//Forgot if it's driven to driver or the other way around
+float externalGearRatio = 1;
 
-//Initializing drivetrain motors
-motor rightFront = motor(PORT12, true);
-motor rightMiddle = motor(PORT13, true);
-motor rightBack = motor(PORT14, true);
-motor leftFront = motor(PORT15, false);
-motor leftMiddle = motor(PORT16, false);
-motor leftBack = motor(PORT17, false);
+vex::drivetrain Drivetrain = vex::drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
 
-//Motor groups
-motor_group leftDriveSmart = motor_group(leftFront, leftMiddle, leftBack);
-motor_group rightDriveSmart = motor_group(rightFront, rightMiddle, rightBack);
+vex::digital_out MobileGoalSolenoid = vex::digital_out(Brain.ThreeWirePort.A);
+vex::digital_out FineControlLED = vex::digital_out(Brain.ThreeWirePort.B);
+//Change controls here
 
-//These values are used to construct the drivetrain object
-const float wheelTravel = 2.75 * M_PI;
-const float trackWidth = 18;
-const float wheelBase = 18;
-const float externalGearRatio = 1;
+const vex::controller::button SpinIntakeForward = Controller.ButtonR1; 
+const vex::controller::button SpinIntakeBackward = Controller.ButtonL1;
+const vex::controller::button ActivateFineControl = Controller.ButtonX;
+const vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
+const vex::controller::button ReverseControlsButton = Controller.ButtonB;
 
-//Drivetrain object
-drivetrain Drivetrain = drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, externalGearRatio);
-
-//Pneumatic stuff
-digital_out MobileGoalSolenoid = digital_out(Brain.ThreeWirePort.A);
 bool MobileGoalSolenoidIsActive = false;
 
 //Edit these values for different starting positions
@@ -51,14 +57,7 @@ rotation leftTrackingWheel = rotation(PORT1, false);
 rotation rightTrackingWheel = rotation(PORT2, false);
 rotation backTrackingWheel = rotation(PORT3, false);
 
-//Change controls here
-const vex::controller::button SpinIntakeForwardButton = Controller.ButtonR2; 
-const vex::controller::button SpinIntakeBackwardButton = Controller.ButtonL2;
-const vex::controller::button ActivateFineControlButton = Controller.ButtonX;
-const vex::controller::button ActivateMobileGoalSolenoidButton = Controller.ButtonA;
-
-
-positionsensing position = positionsensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance, startingOrientation);
+positionSensing position = positionSensing(startingX, startingY, leftTrackingWheelDistance, rightTrackingWheelDistance, backWheelTrackingWheelDistance, startingOrientation);
 
 void resetRotationSensors()
 {
@@ -74,49 +73,69 @@ void pre_auton(void) {
 
 
 void autonomous(void) {
-  position.positionsensing::UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
+  position.positionSensing::UpdatePosition(leftTrackingWheel.position(degrees), rightTrackingWheel.position(degrees), backTrackingWheel.position(degrees));
   resetRotationSensors();
   vex::wait(20, msec);
 }
 
 void usercontrol(void) {
-  bool FineControl = false;
-  leftDriveSmart.spin(vex::forward);
-  rightDriveSmart.spin(vex::forward);
-  intake.spin(vex::forward);
+leftDriveSmart.spin(forward);
+  rightDriveSmart.spin(forward);
+  intake.spin(forward);
   while (1) {
-    float leftDrive = Controller.Axis4.position() - Controller.Axis1.position();
-    float rightDrive = Controller.Axis4.position() + Controller.Axis1.position();
-
-    //If we decide to keep this I would want an LED so it's easier to tell when it's on or off    
-    if(ActivateFineControlButton.pressing())
+    float leftDrive = Controller.Axis3.position();
+    float rightDrive = Controller.Axis3.position();
+    if(!ReverseControls)
+    {
+      leftDrive *= -1;
+      rightDrive *= -1;
+    }  
+    leftDrive -= Controller.Axis1.position();
+    rightDrive += Controller.Axis1.position();
+    if(ActivateMobileGoalSolenoid.pressing())
+    {
+      MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
+      MobileGoalSolenoid.set(MobileGoalSolenoidIsActive);
+    }
+    //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
+    if(ActivateFineControl.pressing())
+    {
       FineControl = !FineControl;
-    
+      FineControlLED.set(FineControl);
+    }
+
+    if(ReverseControlsButton.pressing())
+    {
+      ReverseControls = !ReverseControls;
+    }
+
     if(FineControl){
       leftDrive = pow(leftDrive, 3);
       rightDrive = pow(rightDrive, 3);
     }
 
-    if(ActivateMobileGoalSolenoidButton.pressing())
+
+
+
+    leftDriveSmart.spin(forward, leftDrive * 6, volt);
+    rightDriveSmart.spin(forward, rightDrive * 6, volt);
+
+    //kinda shitty code but it should work
+    if(SpinIntakeForward.pressing())
     {
-      if(MobileGoalSolenoidIsActive)
-        MobileGoalSolenoid.set(false);
-      else 
-        MobileGoalSolenoid.set(true); 
-      MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
-    }
-      
-    leftDriveSmart.spin(vex::forward, leftDrive * 6, volt);
-    rightDriveSmart.spin(vex::forward, rightDrive * 6, volt);
-
-    if(SpinIntakeForwardButton.pressing())
-      intake.spin(vex::forward, 12, volt);
-    else if(SpinIntakeBackwardButton.pressing())
-      intake.spin(vex::forward, -12, volt);
-    else
+      intake.spin(forward, 12, volt);
+      conveyorBelt.spin(forward, -12, volt);
+    } else if(SpinIntakeBackward.pressing())
+    {
+      intake.spin(forward, -12, volt);
+      conveyorBelt.spin(forward, 12, volt);
+    } else {
       intake.stop();
-
-    vex::wait(20, msec);  
+      conveyorBelt.stop();
+    }
+    while(ActivateMobileGoalSolenoid.pressing() || ReverseControlsButton.pressing())
+      vex::wait(20, msec);
+    vex::wait(30, msec);  
   }
 }
 
