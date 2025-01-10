@@ -1,31 +1,32 @@
 #ifndef POSITION_SENSING_H
 #define POSITION_SENSING_H
 
+#include "vex.h"
 #include <vector>
 #include <cmath>
-
 
 class positionSensing {
     public:
         // Current position in Cartesian coordinates
-        std::vector<float> currentPosition;
-
+        std::vector<double>* currentPosition;
         // Distances for tracking wheels
-        float leftTrackingWheelDistance;
-        float rightTrackingWheelDistance;
-        float backTrackingWheelDistance;
+        int tracker = 0;
+        //Last orientation
+        double thetaSub0;
+        //Initial orientation
+        double lastResetGlobalOrientation;
+        double startingX;
+        double startingY;
 
-        // Last reset orientation
-        float lastResetGlobalOrientation;
     public:
         // Constructor
-        positionSensing(float startingX, float startingY, float _leftTrackingWheelDistance, float _rightTrackingWheelDistance, float _backTrackingWheelDistance, float startingOrientation);
-
+        positionSensing(double x, double y, double theta);
+        void resetRotationSensors();
         // Get current position
-        std::vector<float> GetPosition();
+        std::vector<double>* GetPosition();
 
         // Update position based on wheel angles
-        void UpdatePosition(float angleLeft, float angleRight, float angleBack);
+        void UpdatePosition();
 
 
 };
