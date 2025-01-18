@@ -30,7 +30,7 @@ vex::motor_group rightDriveSmart = vex::motor_group(rightFront, rightMiddle, rig
 vex::drivetrain Drivetrain = vex::drivetrain(leftDriveSmart, rightDriveSmart, wheelTravel, trackWidth, wheelBase, inches, alGearRatio);
 
 vex::digital_out MobileGoalSolenoid = vex::digital_out(Brain.ThreeWirePort.A);
-
+vex::digital_out PusherSolenoid = vex::digital_out(Brain.ThreeWirePort.H);
 // change controls here
 vex::controller::button SpinIntakeForward = Controller.ButtonR1;
 vex::controller::button SpinIntakeBackward = Controller.ButtonR2;
@@ -39,15 +39,16 @@ vex::controller::button ActivateMobileGoalSolenoid = Controller.ButtonA;
 vex::controller::button ReverseControlsButton = Controller.ButtonB;
 vex::controller::button SpinArmForward = Controller.ButtonL1;
 vex::controller::button SpinArmBackward = Controller.ButtonL2;
-
+vex::controller::button ActivatePusherSolenoid = Controller.ButtonX;
 
 bool MobileGoalSolenoidIsActive = false;
-
+bool PusherSolenoidIsActive = false;
 // tracking wheels
 vex::rotation leftTrackingWheel = vex::rotation(PORT5, true);
 vex::rotation rightTrackingWheel = vex::rotation(PORT8, true);
 vex::rotation backTrackingWheel = vex::rotation(PORT19, true);
-positionSensing position = positionSensing(0, 0, 0);
+//positionSensing position = positionSensing(1.0, 1.0, 0.0);
+
 
 
 

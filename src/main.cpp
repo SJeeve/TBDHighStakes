@@ -8,31 +8,20 @@ using namespace vex;
 vex::competition Competition;
 std::vector<std::vector<double>> PathPoints = {{0,0}, {0,1}};
 //Pathing pathing = Pathing(PathPoints);
-
+vex::inertial Inertial = inertial(PORT10);
 bool lockArm = false;
 bool FineControl = false;
 bool ReverseControls = false;
 
 void pre_auton(void) {
-  //pathing.resetRotationSensors();
-}
-
-void updateTracking()
-{
-
-}
-/*void test_serial_output()
-{
-  double count = 0;
-  while(true)
+  Inertial.calibrate();
+  while(Inertial.isCalibrating())
   {
-    Brain.Screen.print("THingy %f", 4);
-    printf("%f\n",count);
-    fflush(stdout);
-    wait(100,msec);
-    count++;
+    wait(50, msec);
   }
-}*/
+}
+
+
 void lockArmInPlace()
 {
   lockArm = true;
@@ -188,12 +177,107 @@ void shittyAuton(void)
   Drivetrain.stop();
   intake.stop();*/
 }
+/// @brief Turns robot to specified heading using inertial sensor. Will calculate whether turning left or right will be faster
+/// @param targetHeading Heading robot needs to turn to
+/// @return When heading is within 3% of target heading
+bool turnToHeading(double targetHeading, bool clockwise)
+{
+  rightDriveSmart.stop();
+  leftDriveSmart.stop();
 
+  if(targetHeading == 0)
+  {
+    targetHeading += 0.5;
+  }
 
+  double ThetaDelta = std::abs(Inertial.heading() - targetHeading);
+  
+  while(( std::abs(Inertial.heading() - targetHeading) >= 5))
+  {
+    Brain.Screen.printAt(0, 20, "Heading: %f", Inertial.heading());
+    if(clockwise)
+    {
+      rightDriveSmart.spin(vex::reverse,  (4), volt);
+      leftDriveSmart.spin(vex::forward,  (4), volt);
+    } else {
+      rightDriveSmart.spin(vex::forward,  (4), volt);
+      leftDriveSmart.spin(vex::reverse,  (4), volt);
+    }
 
-void autonomous(void) {
-  //pathing.Path();
+    //vex::wait(5, msec);
+  }
+  rightDriveSmart.stop();
+  leftDriveSmart.stop();
+  return true;
 }
+bool SpinIntake(double time)
+{
+  intake.spin(forward, 12, volt);
+  wait(time, msec);
+  intake.stop();
+  return true;
+}
+bool DriveDirection(int direction, double moveSpeed, double time)
+{
+  leftDriveSmart.spin(forward, direction * moveSpeed, volt);
+  rightDriveSmart.spin(forward, 0.875 * direction * moveSpeed, volt);
+  wait(time, msec);
+  leftDriveSmart.stop();
+  rightDriveSmart.stop();
+  return true;
+}
+bool changeMobileGoalSolenoid()
+{
+  MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
+  MobileGoalSolenoid.set(MobileGoalSolenoidIsActive);
+  wait(150, msec);
+  return true;
+}
+void Auton32points(void)
+{
+  Inertial.calibrate();
+
+  while(Inertial.isCalibrating())
+  {
+    wait(50, msec);
+  }
+  Inertial.setHeading(0, degrees);
+  //First ring
+  SpinIntake(500);
+  //Picking up first mobilegoal
+  DriveDirection(-1, 4, 300);
+  turnToHeading(265, false);
+  DriveDirection(1, 6, 875);
+  changeMobileGoalSolenoid();
+  //Intaking ring for first mobile goal
+  turnToHeading(90, true);
+  intake.spin(forward, 12, volt);
+  DriveDirection(-1, 5, 800);
+  turnToHeading(100, false);
+  Inertial.setHeading(90, degrees);
+  turnToHeading(120, true);
+  wait(2000, msec);
+  intake.stop();
+  //Keep move speed low
+  //Keep turn speed lower
+  //Make sure battery never drops below ~70%
+  //Slapping in an intertial sensor should make it go pretty quick
+
+  //Turn around
+  //drive to mobile goal
+  //clamp
+  //Drive to corner 
+  //Drop it
+  //grab other 
+  //put one ring on it
+  //drop it
+  //Get other
+  //put in corner
+  //Get last one 
+  //Put in corner
+}
+
+
 
 void usercontrolcode()
 {
@@ -209,10 +293,16 @@ void usercontrolcode()
   }  
   leftDrive -= 0.8f * Controller.Axis1.position()/100.0;
   rightDrive += 0.8f * Controller.Axis1.position()/100.0;
+  rightDrive *= .875f;
   if(ActivateMobileGoalSolenoid.pressing())
   {
     MobileGoalSolenoidIsActive = !MobileGoalSolenoidIsActive;
     MobileGoalSolenoid.set(MobileGoalSolenoidIsActive);
+  }
+  if(ActivatePusherSolenoid.pressing())
+  {
+    PusherSolenoidIsActive = !PusherSolenoidIsActive;
+    PusherSolenoid.set(PusherSolenoidIsActive);
   }
   //If we decide to keep this I would want an LED so it's easier to tell when it's on or off
   if(ActivateFineControl.pressing())
@@ -257,7 +347,7 @@ void usercontrolcode()
   }
 
   SpinArmForward.released(lockArmInPlace);
-  while(ActivateMobileGoalSolenoid.pressing())
+  while(ActivateMobileGoalSolenoid.pressing() || ActivatePusherSolenoid.pressing())
   {
     vex::wait(20, msec);
   }
@@ -269,17 +359,57 @@ void usercontrolcode()
   delete rightDrivePtr;
 }
 
+void AutonWinPoint(void)
+{
 
+  DriveDirection(1, 7, 1000);
+  wait(200, msec);
+  changeMobileGoalSolenoid();
+  SpinIntake(1000);
+  wait(1000, msec);
+  turnToHeading(285, true);
+  intake.spin(forward, 12, volt);
+  wait(200, msec);
+  DriveDirection(-1, 7, 800);
+  wait(1500, msec);
+  intake.stop();
+  wait(250, msec);
+  Inertial.setHeading(0, degrees);
+  turnToHeading(185, false);
+  DriveDirection(-1, 6, 2000);
+
+}
+void AutonWinPointLeft(void)
+{
+
+  DriveDirection(1, 7, 1000);
+  wait(200, msec);
+  changeMobileGoalSolenoid();
+  SpinIntake(1000);
+  wait(1000, msec);
+  intake.spin(reverse, 12, volt);
+  wait(500, msec);
+  intake.stop();
+  turnToHeading(70, false);
+  intake.spin(forward, 12, volt);
+  wait(200, msec);
+  DriveDirection(-1, 7, 800);
+  wait(1300, msec);
+  intake.stop();
+  wait(250, msec);
+  Inertial.setHeading(0, degrees);
+  turnToHeading(180, true);
+  DriveDirection(-1, 6, 2000);
+
+}
 void usercontrol(void) {
   // leftDriveSmart.spin(vex::forward);
   // rightDriveSmart.spin(vex::forward);
   // intake.spin(vex::forward);
-    //position.resetRotationSensors();
+
   while (1) {
     usercontrolcode();
-    //position.UpdatePosition();
-    vex::wait(10, msec);
-
+    vex::wait(5, msec);
   }
 }
 
@@ -294,6 +424,9 @@ int myTask()
   return 0;
 
 }
+void autonomous(void) {
+  AutonWinPoint();
+}
 int main() {
   // Set up callbacks for autonomous and driver control periods.
   Competition.autonomous(autonomous);
@@ -305,9 +438,7 @@ int main() {
   pre_auton();
 
   while (true) {
-    Brain.Screen.printAt(100, 30, "Left Tracking: %0.3f", leftTrackingWheel.position(degrees));
-    Brain.Screen.printAt(100, 50, "Right Tracking: %0.3f", rightTrackingWheel.position(degrees));
-    Brain.Screen.printAt(100, 70, "Back Tracking: %0.3f", backTrackingWheel.position(degrees));
+
     vex::wait(10, msec);
   }
 }

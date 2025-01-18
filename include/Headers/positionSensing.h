@@ -4,13 +4,13 @@
 #include "vex.h"
 #include <vector>
 #include <cmath>
+#include <typeinfo>
 
 class positionSensing {
     public:
         // Current position in Cartesian coordinates
-        std::vector<double>* currentPosition;
+        
         // Distances for tracking wheels
-        int tracker = 0;
         //Last orientation
         double thetaSub0;
         //Initial orientation

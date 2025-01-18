@@ -37,6 +37,7 @@ extern vex::controller::button ActivateMobileGoalSolenoid;
 extern vex::controller::button ReverseControlsButton;
 extern vex::controller::button SpinArmForward;
 extern vex::controller::button SpinArmBackward;
+extern vex::controller::button ActivatePusherSolenoid;
 
 // vex::motor groups
 extern vex::motor_group leftDriveSmart;
@@ -44,11 +45,12 @@ extern vex::motor_group rightDriveSmart;
 extern vex::drivetrain Drivetrain;
 
 extern vex::digital_out MobileGoalSolenoid;
-
+extern vex::digital_out PusherSolenoid;
 //extern vex::controller::button SpinArmForward;
 //extern vex::controller::button SpinArmBackward;
 
 extern bool MobileGoalSolenoidIsActive;
+extern bool PusherSolenoidIsActive;
 
 // Tracking wheels
 extern rotation leftTrackingWheel;

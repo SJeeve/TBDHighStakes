@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vex.h>
-
+#include <cmath>
 
         //Wheel diameter is somewhere between 2.5 and 2.75
         //Needs more testing to get actual value
@@ -15,7 +15,7 @@
             double xComponent = componentVector[0];
             double yComponent = componentVector[1];
             //Sets first element of vector to length of vector
-            componentVector[0] = sqrt(pow(xComponent, 2.0) + pow(yComponent, 2.0));
+            componentVector[0] = sqrt(pow(xComponent, 2) + pow(yComponent, 2));
             //Sets second element to angle
             componentVector[1] = atan(yComponent/xComponent);
 
@@ -116,8 +116,8 @@
             //NOTE: THESE ARE ALL IN RADIANS AND NOT DEGREES
             double polarMagnitude = polarVector[0];
             double polarRadians = polarVector[1];
-            polarVector[0] = polarMagnitude * std::cos(polarRadians);
-            polarVector[1] = polarMagnitude * std::sin(polarRadians);
+            polarVector[0] = polarMagnitude * cos(polarRadians);
+            polarVector[1] = polarMagnitude * sin(polarRadians);
         }
 
         /// @brief This scales a given vector by a given scalar

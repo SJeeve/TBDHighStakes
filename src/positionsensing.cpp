@@ -1,10 +1,11 @@
 
 #include "vex.h"
 #include "vector"
-
+#include "typeinfo"
+#include "cmath"
 using namespace vex;
 //Note: All measurements are in inches
-    
+    std::vector<double>* currentPosition;    
     positionSensing::positionSensing(double x, double y, double theta)
     {
         currentPosition = new std::vector<double>();
@@ -37,6 +38,8 @@ using namespace vex;
     {
         //DEltas correspond to the change in angles from the rotation sensors
         //need to change deltas to distance traveled 
+        double oldX = currentPosition -> at(0);
+        double oldY = currentPosition -> at(1);
         double deltaLeft = vectorMath::AngleToDistance(leftTrackingWheel.position(degrees));
         double deltaRight = vectorMath::AngleToDistance(rightTrackingWheel.position(degrees));
         double deltaBack = vectorMath::AngleToDistance(backTrackingWheel.position(degrees));
@@ -57,13 +60,13 @@ using namespace vex;
             localTranslationVector -> push_back((deltaBack / deltaTheta) + backTrackingWheelDistance);
             localTranslationVector -> push_back(arcRadius);
             //Have to multiply vector by 2sin(theta/2) t
-            vectorMath::ScaleVector(*localTranslationVector, 2 * sin(deltaTheta / 2.0));
+            vectorMath::ScaleVector(*localTranslationVector, 2.0 * sin(deltaTheta / 2.0));
         } else {
             localTranslationVector -> push_back(deltaBack);
             localTranslationVector -> push_back(deltaRight);
         }
 
-        double averageOrientation = thetaSub0 + deltaTheta / 2;
+        double averageOrientation = thetaSub0 + deltaTheta / 2.0;
 
         vectorMath::CartesianToPolar(*localTranslationVector);
 
@@ -71,14 +74,16 @@ using namespace vex;
 
         vectorMath::PolarToCartesian(*localTranslationVector);
 
-        currentPosition -> at(0) += localTranslationVector -> at(0);
-        currentPosition -> at(1) += localTranslationVector -> at(1);
-
-        Brain.Screen.printAt(0, 190, "TranslationX: %f", localTranslationVector -> at(0));
-        Brain.Screen.printAt(250, 190, "TranslationY: %f", localTranslationVector -> at(1));
+        currentPosition -> at(0) = currentPosition->at(0) + localTranslationVector -> at(0);
+        currentPosition -> at(1) = currentPosition->at(1) + localTranslationVector -> at(1);
+        
+        // Brain.Screen.printAt(0, 170, "Magnitude: %f",  magnitude);
+        // Brain.Screen.printAt(250, 170, "Angle: %f",  radians);
+        Brain.Screen.printAt(0, 190, "tX: %f", localTranslationVector -> at(0));
+        Brain.Screen.printAt(250, 190, "tY: %f", localTranslationVector -> at(1));
         Brain.Screen.printAt(0, 210, "currentPosX: %f", currentPosition -> at(0));
         Brain.Screen.printAt(250, 210, "currentPosY: %f", currentPosition -> at(1));
-        //Brain.Screen.printAt(250, 170, "%d", (currentPosition[0] == currentPosition[0]));
+
         thetaSub0 = newOrientation;
         resetRotationSensors();
         delete localTranslationVector;

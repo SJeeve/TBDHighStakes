@@ -5,7 +5,7 @@
 #include <math.h>
 #include <vex.h>
 #include <bits/stdc++.h>
-
+#include <cmath>
 
 FalconPathPlanner::FalconPathPlanner()
 {
@@ -107,8 +107,8 @@ std::vector<std::vector<double>> FalconPathPlanner::nodeOnlyWayPoints(std::vecto
 
     for(int i = 1; i < path.size() - 2; i++)
     {
-        double vector1 = std::atan2((path[i][1]-path[i-1][1]), path[i][0]-path[i-1][0]);
-        double vector2 = std::atan2((path[i+1][1]-path[i][1]), path[i+1][0]-path[i][0]);
+        double vector1 = atan2((path[i][1]-path[i-1][1]), path[i][0]-path[i-1][0]);
+        double vector2 = atan2((path[i+1][1]-path[i][1]), path[i+1][0]-path[i][0]);
 
         if(std::abs(vector2 - vector1)>=0.01)
             li.push_back(path[i]);
@@ -314,7 +314,7 @@ void FalconPathPlanner::leftRight(std::vector<std::vector<double>> smoothPath, d
         gradient.push_back(std::vector<double> {0,0});
         leftPath.push_back(std::vector<double> {0,0});
         rightPath.push_back(std::vector<double> {0,0});
-        gradient[i][1] = std::atan2(smoothPath[i+1][1] - smoothPath[i][1], smoothPath[i+1][0] - smoothPath[i][0]);
+        gradient[i][1] = atan2(smoothPath[i+1][1] - smoothPath[i][1], smoothPath[i+1][0] - smoothPath[i][0]);
 
     }
 
@@ -322,11 +322,11 @@ void FalconPathPlanner::leftRight(std::vector<std::vector<double>> smoothPath, d
 
     for(int i = 0; i < gradient.size(); i++)
     {
-        leftPath[i][0] = (robotTrackWidth/2 * std::cos(gradient[i][1] + M_PI/2)) + smoothPath[i][0];
+        leftPath[i][0] = (robotTrackWidth/2 * cos(gradient[i][1] + M_PI/2)) + smoothPath[i][0];
         leftPath[i][1] = (robotTrackWidth/2 * sin(gradient[i][1] + M_PI/2)) + smoothPath[i][1];   
 
-        rightPath[i][0] = robotTrackWidth / 2 * std::cos(gradient[i][1] - M_PI / 2) + smoothPath[i][0];
-        rightPath[i][1] = robotTrackWidth / 2 * std::sin(gradient[i][1] - M_PI / 2) + smoothPath[i][1];
+        rightPath[i][0] = robotTrackWidth / 2 * cos(gradient[i][1] - M_PI / 2) + smoothPath[i][0];
+        rightPath[i][1] = robotTrackWidth / 2 * sin(gradient[i][1] - M_PI / 2) + smoothPath[i][1];
 
          double deg = vectorMath::RadiansToDegrees(gradient[i][1]);
          if(i > 0)
